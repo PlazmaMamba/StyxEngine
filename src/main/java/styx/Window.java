@@ -4,6 +4,7 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -34,6 +35,14 @@ public class Window {
 
         init();
         loop();
+
+        //free memory
+        glfwFreeCallbacks(glfwWindow);
+        glfwDestroyWindow(glfwWindow);
+
+        //terminate glfw and free error callback
+        glfwTerminate();
+        glfwSetErrorCallback(null).free();
     }
 
     public void init(){
@@ -57,6 +66,11 @@ public class Window {
             throw new IllegalStateException("Failed to create the GLFW window.")     ;
         }
 
+        glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
+        glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback)     ;
+        glfwSetScrollCallback(glfwWindow, MouseListener::mouseScrollCallback);
+
+         glfwSetKeyCallback(glfwWindow, KeyListener::keyCallback)  ;
         //make opengl context current
         glfwMakeContextCurrent(glfwWindow);
         //vsync
@@ -73,10 +87,14 @@ public class Window {
             //poll events
             glfwPollEvents();
 
-            glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-            glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+
+
             glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
+
+            if (KeyListener.isKeyPressed(GLFW_KEY_SPACE)){
+                System.out.println("SPACE PRESSED");
+            }
 
             glfwSwapBuffers(glfwWindow);
         }
